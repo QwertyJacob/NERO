@@ -1,0 +1,10 @@
+/data/*
+**/wandb/
+/models/*
+/.idea/*
+**/.ipynb__checkpoints/
+/venv/*
+**/**/.ipynb_checkpoints/
+**/__pycache__/
+*.pt
+*.csv
