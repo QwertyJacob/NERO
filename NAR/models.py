@@ -817,9 +817,8 @@ class GAT_V5_Processor(nn.Module):
         n_queries = h.shape[0]
         
         # we take only centroids available
-        # they will be ordered in the order of labels
-        # that is luckily compatible with our label transdormation
-        # see training helper functions.
+        # luckily compatible with our label transformation strategy
+        # see (helper functions in the training notebooks).
         centroids = centroids[~missing_clusters]
 
         scores = 1 / (torch.cdist(h, centroids) + 1e-10)
