@@ -94,6 +94,37 @@ def mask_synth_data(
     return data
 
 
+def mask_real_data_lowdim(
+    data,
+    micro_zdas,
+    micro_type_A_ZdAs,
+    micro_type_B_ZdAs
+    ):
+
+    data['ZdA'] = np.where(
+        data['Micro Label'].isin(micro_zdas),
+        True,
+        False)
+
+    data['Type_A_ZdA'] = np.where(
+        data['Micro Label'].isin(micro_type_A_ZdAs),
+        True,
+        False)
+
+    data['Type_B_ZdA'] = np.where(
+        data['Micro Label'].isin(micro_type_B_ZdAs),
+        True,
+        False)
+
+    assert np.all(
+        set(micro_type_A_ZdAs) == set(data[data.Type_A_ZdA]['Micro Label'].unique()))
+    
+    assert np.all(
+        set(micro_type_B_ZdAs) == set(data[data.Type_B_ZdA]['Micro Label'].unique()))
+    
+    return data
+
+
 def mask_real_data(
     data,
     micro_zdas,

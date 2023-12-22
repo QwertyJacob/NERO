@@ -356,6 +356,88 @@ class Simple_Dataset(Dataset):
     def __getitem__(self, idx):
         return self.data_points[idx], self.labels[idx]
 
+
+class RealFewShotDataset_LowDim(Dataset):
+
+    def __init__(
+            self,
+            features,
+            df: pd.DataFrame):
+
+        self.data_points = torch.from_numpy(features)
+        data_idxs = np.arange(0, self.data_points.shape[0], dtype=np.int32)
+
+        self.micro_labels = df['Micro Label'].values
+        self.macro_labels = df['Macro Label'].values
+
+        self.macro_label_encoder = LabelEncoder()
+        macro_encoded_labels = self.macro_label_encoder.fit_transform(
+           self.macro_labels)
+        self.macro_encoded_labels = torch.Tensor([
+            int(label) for label in macro_encoded_labels]).unsqueeze(-1)
+
+        self.micro_label_encoder = LabelEncoder()
+        micro_encoded_labels = self.micro_label_encoder.fit_transform(
+            self.micro_labels)
+        self.micro_encoded_labels = torch.Tensor([
+            int(label) for label in micro_encoded_labels]).unsqueeze(-1)
+
+
+        self.type_A_ZdA_mask = torch.from_numpy(
+            df['Type_A_ZdA'].values).float().unsqueeze(-1)
+        self.type_B_ZdA_mask = torch.from_numpy(
+            df['Type_B_ZdA'].values).float().unsqueeze(-1)
+
+        # we need to know which classes are known and unknown:
+        self.type_A_micro_attacks = df[df['Type_A_ZdA']]['Micro Label'].unique()
+        self.type_B_micro_attacks = df[df['Type_B_ZdA']]['Micro Label'].unique()
+        self.type_A_macro_attacks = df[df['Type_A_ZdA']]['Macro Label'].unique()
+        self.known_micro_attacks = df[df['ZdA'] == False]['Micro Label'].unique()
+        self.known_macro_attacks = df[df['ZdA'] == False]['Macro Label'].unique()
+
+
+        self.known_taxonomy = {}
+        for k_macro in self.known_macro_attacks:
+            for k_micro in df[(df['Macro Label']==k_macro) & (df['ZdA'] == False)]['Micro Label'].unique():
+                if k_macro not in self.known_taxonomy.keys():
+                    self.known_taxonomy[k_macro] = []
+                self.known_taxonomy[k_macro].append(k_micro)
+
+
+        self.type_B_taxonomy = {}
+        for k_macro in self.known_macro_attacks:
+            for k_micro in df[(df['Macro Label']==k_macro) & (df['ZdA'] == True)]['Micro Label'].unique():
+                if k_macro not in self.type_B_taxonomy.keys():
+                    self.type_B_taxonomy[k_macro] = []
+                self.type_B_taxonomy[k_macro].append(k_micro)
+
+        # build special label tensor where a label is a tensor
+        # indicating the macro, micro class, and if it is a
+        # type A or Type B class
+        self.labels = torch.cat([
+                   self.macro_encoded_labels,
+                   self.micro_encoded_labels,
+                   self.type_A_ZdA_mask,
+                   self.type_B_ZdA_mask],
+            dim=1)
+
+        self.micro_classes = np.unique(self.micro_labels)
+
+        self.idxs_per_micro_class = {}
+        for class_name in self.micro_classes:
+            class_mask = self.micro_labels == class_name
+            idxs_of_class = data_idxs[class_mask]
+            self.idxs_per_micro_class[class_name] = idxs_of_class
+
+
+    def __len__(self):
+        return len(self.data_points)
+
+
+    def __getitem__(self, idx):
+        return self.data_points[idx], self.labels[idx]
+
+
 class RealFewShotDataset(Dataset):
 
     def __init__(
@@ -461,6 +543,7 @@ def convenient_cf(batch):
     in the sampler. 
     """
     return batch[0] 
+    
     
 class FewShotSampler(Sampler):
     def __init__(
