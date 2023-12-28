@@ -362,7 +362,9 @@ class RealFewShotDataset_LowDim(Dataset):
     def __init__(
             self,
             features,
-            df: pd.DataFrame):
+            df: pd.DataFrame,
+            micro_label_enc,
+            macro_label_enc):
 
         self.data_points = torch.from_numpy(features)
         data_idxs = np.arange(0, self.data_points.shape[0], dtype=np.int32)
@@ -370,14 +372,14 @@ class RealFewShotDataset_LowDim(Dataset):
         self.micro_labels = df['Micro Label'].values
         self.macro_labels = df['Macro Label'].values
 
-        self.macro_label_encoder = LabelEncoder()
-        macro_encoded_labels = self.macro_label_encoder.fit_transform(
+        self.macro_label_encoder = macro_label_enc
+        macro_encoded_labels = self.macro_label_encoder.transform(
            self.macro_labels)
         self.macro_encoded_labels = torch.Tensor([
             int(label) for label in macro_encoded_labels]).unsqueeze(-1)
 
-        self.micro_label_encoder = LabelEncoder()
-        micro_encoded_labels = self.micro_label_encoder.fit_transform(
+        self.micro_label_encoder = micro_label_enc
+        micro_encoded_labels = self.micro_label_encoder.transform(
             self.micro_labels)
         self.micro_encoded_labels = torch.Tensor([
             int(label) for label in micro_encoded_labels]).unsqueeze(-1)
