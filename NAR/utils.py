@@ -408,6 +408,87 @@ def reporting_simple(
               np.array(metrics_dict['OS_2_B_accuracies']).mean())
 
 
+def reporting_simple_optimized(
+        suffix,
+        epoch,
+        metrics_dict,
+        batch_idx,
+        report_frequency,
+        wb,
+        wandb):
+
+    if batch_idx-report_frequency < 0:
+        init_idx = 0
+    else:
+        init_idx = batch_idx-report_frequency
+    if wb:
+        wandb.log(
+            {'epoch: ': epoch,
+             'step: ': batch_idx})
+        wandb.log(
+            {f'mean dec_1_loss_a_{suffix}: ':
+             metrics_dict['losses_1a'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'mean proc_reg_loss1 {suffix}: ':
+             metrics_dict['proc_reg_loss1'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'mean dec_1_loss_b_{suffix}: ':
+             metrics_dict['losses_1b'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'CS1 accuracy_{suffix}: ':
+             metrics_dict['CS_accuracies'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'OS1 accuracy_{suffix}: ':
+             metrics_dict['OS_accuracies'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'OS1 Bal. accuracy_{suffix}: ':
+             metrics_dict['OS_B_accuracies'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'mean dec_2_loss_a_{suffix}: ':
+             metrics_dict['losses_2a'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'mean proc_reg_loss2 {suffix}: ':
+             metrics_dict['proc_reg_loss2'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'mean dec_2_loss_b_{suffix}: ':
+             metrics_dict['losses_2b'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'CS2 accuracy_{suffix}: ':
+             metrics_dict['CS_2_accuracies'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'OS2 accuracy_{suffix}: ':
+             metrics_dict['OS_2_accuracies'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+        wandb.log(
+            {f'OS2 Bal. accuracy_{suffix}: ':
+             metrics_dict['OS_2_B_accuracies'][init_idx:batch_idx+1].mean().item(),
+             'step: ': batch_idx})
+
+    else:
+        # print(f'mean dec_1_loss_a_{suffix}: ', losses_1a.mean().item())
+        # print(f'mean dec_1_loss_b_{suffix}: ', losses_1b.mean().item())
+        print(f'CS accuracy_{suffix}: ',
+              metrics_dict['CS_accuracies'][init_idx:batch_idx+1].mean().item())
+        print(f'OS accuracy_{suffix}: ',
+              metrics_dict['OS_B_accuracies'][init_idx:batch_idx+1].mean().item())
+        # print(f'mean dec_2_loss_a_{suffix}: ', losses_2a.mean().item())
+        # print(f'mean dec_2_loss_b_{suffix}: ', losses_2b.mean().item())
+        print(f'CS2 accuracy_{suffix}: ',
+              metrics_dict['CS_2_accuracies'][init_idx:batch_idx+1].mean().item())
+        print(f'OS2 accuracy_{suffix}: ',
+              metrics_dict['OS_2_B_accuracies'][init_idx:batch_idx+1].mean().item())
+
+
 def reporting_gennaro(
         suffix,
         epoch,
@@ -511,6 +592,23 @@ def reset_metrics_dict():
         'CS_2_accuracies': [],
         'OS_2_accuracies': [],
         'OS_2_B_accuracies': []
+    }
+
+
+def reset_metrics_dict_optimized(metric_lens, device):
+    return {
+        'losses_1a': torch.zeros(size=(metric_lens,), device=device),
+        'losses_1b': torch.zeros(size=(metric_lens,), device=device),
+        'proc_reg_loss1': torch.zeros(size=(metric_lens,), device=device),
+        'proc_reg_loss2': torch.zeros(size=(metric_lens,), device=device),
+        'OS_accuracies': torch.zeros(size=(metric_lens,), device=device),
+        'OS_B_accuracies': torch.zeros(size=(metric_lens,), device=device),
+        'CS_accuracies': torch.zeros(size=(metric_lens,), device=device),
+        'losses_2a': torch.zeros(size=(metric_lens,), device=device),
+        'losses_2b': torch.zeros(size=(metric_lens,), device=device),
+        'CS_2_accuracies': torch.zeros(size=(metric_lens,), device=device),
+        'OS_2_accuracies': torch.zeros(size=(metric_lens,), device=device),
+        'OS_2_B_accuracies': torch.zeros(size=(metric_lens,), device=device),
     }
 
 def reset_metrics_dict_gennaro():
