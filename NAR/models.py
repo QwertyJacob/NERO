@@ -1522,3 +1522,34 @@ class Encoder(nn.Module):
         latent_inputs = self.act(self.encoder_layer_2(latent_inputs))
 
         return latent_inputs
+
+
+"""
+BOVENZI
+"""
+class Simple_MLP_Classifier(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, dropout):
+        super(Simple_MLP_Classifier, self).__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(dropout)
+        self.fc2 = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.fc2(x)
+        x = torch.softmax(x, 1)
+        return x
+
+class AnomalyDetectionModule(nn.Module):
+    def __init__(self, tau_u):
+        super(AnomalyDetectionModule, self).__init__()
+        # Define the threshold as a learnable parameter
+        # self.threshold = nn.Parameter(torch.tensor(0.85), requires_grad=True)
+        self.tau_u = tau_u
+
+    def forward(self, x):
+        # If input is greater than the threshold, return the anomaly score
+        return torch.relu(x - self.tau_u)
