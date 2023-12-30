@@ -1540,16 +1540,21 @@ class Simple_MLP_Classifier(nn.Module):
         x = self.relu(x)
         x = self.dropout(x)
         x = self.fc2(x)
-        x = torch.softmax(x, 1)
+        x = torch.softmax(x,1)
         return x
 
-class AnomalyDetectionModule(nn.Module):
+class FixedAnomalyDetectionModule(nn.Module):
     def __init__(self, tau_u):
-        super(AnomalyDetectionModule, self).__init__()
-        # Define the threshold as a learnable parameter
-        # self.threshold = nn.Parameter(torch.tensor(0.85), requires_grad=True)
+        super(FixedAnomalyDetectionModule, self).__init__()
         self.tau_u = tau_u
 
     def forward(self, x):
-        # If input is greater than the threshold, return the anomaly score
         return torch.relu(x - self.tau_u)
+
+class LearnableAnomalyDetectionModule(nn.Module):
+    def __init__(self, init_treshold):
+        super(LearnableAnomalyDetectionModule, self).__init__()
+        # Define the threshold as a learnable parameter
+        self.threshold = nn.Parameter(torch.tensor(init_treshold), requires_grad=True)
+    def forward(self, x):
+        return torch.relu(x - self.threshold)
